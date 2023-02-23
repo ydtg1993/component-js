@@ -10,7 +10,10 @@ window._component = {
   <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"/>
   <path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5v11z"/>
 </svg>`,
-    close: `<svg style="vertical-align: middle;" width="14" height="14" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill="none" stroke="white" stroke-width="2.5" d="M16,16 L4,4"></path><path fill="none" stroke="white" stroke-width="2.5" d="M16,4 L4,16"></path></svg>`,
+    close: `<svg style="vertical-align: middle;" width="16" height="16" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill="none" stroke="white" stroke-width="2.5" d="M16,16 L4,4"></path><path fill="none" stroke="white" stroke-width="2.5" d="M16,4 L4,16"></path></svg>`,
+    aspect: `<svg xmlns="http://www.w3.org/2000/svg" style="vertical-align: middle;" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+  <path fill="#ffffff" d="M0 12.5v-9A1.5 1.5 0 0 1 1.5 2h13A1.5 1.5 0 0 1 16 3.5v9a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 0 12.5zM2.5 4a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 1 0V5h2.5a.5.5 0 0 0 0-1h-3zm11 8a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-1 0V11h-2.5a.5.5 0 0 0 0 1h3z"/>
+</svg>`,
     check: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
   <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/>
 </svg>`,
@@ -143,6 +146,56 @@ window._component = {
             if (typeof callback === 'function') callback();
         }, time * 1000);
     },
+    dialog:function(info,width,height){
+        let gauze = document.createElement('div');
+        gauze.className = 'dlp-plane-gauze';
+        let box = document.createElement('div');
+        if (width) {
+            box.style.width = width;
+        }else {
+            box.style.width = '450px';
+        }
+        let top;
+        if(height){
+            top = (window.innerHeight - height - 24) / 2;
+        }else {
+            top = (window.innerHeight - 94) / 2;
+        }
+        box.style.margin = `${top}px auto`;
+        let header = document.createElement('div');
+        header.className = 'dlp plane-header';
+        /*X*/
+        let X = document.createElement('i');
+        X.insertAdjacentHTML('afterbegin', _component.close);
+        X.addEventListener('click', () => {
+            if (this.DOM instanceof HTMLElement) {
+                this.DOM.remove();
+            }
+            if (document.getElementById('kvFileinputModal') instanceof HTMLElement) {
+                document.getElementById('kvFileinputModal').remove();
+            }
+        }, false);
+        header.append(X);
+        let body = document.createElement('div');
+        body.className = 'plane-body';
+        if(height){
+            body.style.height = height;
+        }else {
+            body.style.height = '70px';
+        }
+        if (info instanceof HTMLElement){
+            body.append(info);
+        }else {
+            body.insertAdjacentHTML("afterbegin", info);
+        }
+
+        box.append(header);
+        box.append(body);
+        gauze.append(box);
+        this.DOM = gauze;
+        document.body.append(gauze);
+        return body;
+    },
     contextmenu: function (event, list, options = {}) {
         options = Object.assign({
             W: '70px'
@@ -198,7 +251,7 @@ window._component = {
         dimension++;
         _component.dimensional(output, data.nodes, dimension, parentNodes);
     },
-    imgDelay(name,time=200,zoom= false) {
+    imgDelay(name,time=200,zoom= false,width=300,height = 0) {
         let list = document.getElementsByClassName(name);
         let i = 0;
         for(let dom of list){
@@ -211,12 +264,45 @@ window._component = {
                     dom.addEventListener('mouseover', function(e) {
                         document.body.append(img);
                         img.style.position = 'absolute';
-                        img.style.top = `${e.pageY + 7}px`;
-                        img.style.left = `${e.pageX + 7}px`;
                         img.style.zIndex = '1000000';
-                        img.style.width = '300px';
                         img.style.borderRadius = '3px';
                         img.setAttribute('src', src);
+
+                        let scale;
+                        if(width === 0){
+                            scale = img.naturalWidth / img.naturalWidth;
+                        }else {
+                            scale = width / img.naturalWidth;
+                        }
+                        let offsetY = img.naturalHeight * scale / 2;
+                        if(height>0){
+                            offsetY = height / 2;
+                            img.style.height = `${height}px`;
+                        }else if (height<0) {
+                            if (img.naturalHeight > window.innerHeight){
+                                let h = (window.innerHeight - 10);
+                                img.style.height = `${h}px`;
+                                offsetY = (h) / 2;
+                                width = 0;
+                            }
+                        }
+                        if(width>0) {
+                            img.style.width = `${width}px`;
+                        }else {
+                            img.style.width = `auto`;
+                        }
+                        img.style.top = `${e.pageY - offsetY}px`;
+                        let distanceToBottom = window.innerHeight - e.clientY;
+                        if (window.innerHeight - e.clientY < offsetY + 5){
+                            img.style.top = `${e.pageY - (offsetY + (offsetY - distanceToBottom) + 5)}px`;
+                        }else if(e.clientY < offsetY - 5){
+                            img.style.top = `${e.pageY - (offsetY - (offsetY - e.clientY) - 5)}px`;
+                        }
+                        if(window.innerWidth - e.clientX < img.naturalWidth){
+                            img.style.left = `${e.pageX - img.naturalWidth - 30}px`;
+                        }else {
+                            img.style.left = `${e.pageX + 25}px`;
+                        }
                     });
                     dom.addEventListener('mouseout', function(e) {
                         e.stopPropagation();
@@ -251,7 +337,7 @@ window.ComponentDot = class {
         this.DOM.addEventListener("contextmenu", (e) => {
             e.preventDefault();
         });
-        this.menu = Object.assign({mode: false, placeholder: '未选择', height: '150px',toward:true}, menu);
+        this.menu = Object.assign({mode: false, placeholder: '未选择', height: '150px'}, menu);
         selected = selected.filter(d=>{
             if(select[d] === undefined)return false;
             return true;
@@ -377,15 +463,6 @@ window.ComponentDot = class {
         });
 
         this.DOM.append(menu);
-        if(this.menu.toward === false){
-            menu_list.style.display = 'flex';
-            menu_list.style.top = `-${menu_list.clientHeight}px`;
-            menu_list.style.height = `${menu_list.clientHeight}px`;
-            menu_list.style.flexDirection = 'column-reverse';
-            menu_list.style.display = 'none';
-        }else {
-            menu_list.style.flexDirection = 'column';
-        }
         this.DOM.insertAdjacentHTML('beforeend', `<input name="${this.name}[select]" value='${JSON.stringify(selected)}' type="hidden"><input name="${this.name}[insert]" value="[]" type="hidden"><input name="${this.name}[delete]" value="[]" type="hidden">`);
         this.SELECTED_DOM = document.querySelector(`#${this.name}  .dlp-dot-menu-select`).firstElementChild;
         this.CONTENT_DOM = document.querySelector(`#${this.name}  .list`);
@@ -526,7 +603,10 @@ window.ComponentCascadeDot = class {
             console.error('CascadeDot param selected and select must be array!');
             return;
         }
-
+        selected = selected.filter(d=>{
+            if(select[d] === undefined)return false;
+            return true;
+        });
         this.name = name;
         this.limit = limit;
         this.DOM = document.getElementById(name);
@@ -820,40 +900,42 @@ window.ComponentCascadeDot = class {
             this.CONTENT_DOM.parentNode.append(this.SELECT_COVER_DOM);
         }
         this.dimensional_data.forEach((data, stack) => {
-            data.forEach((d, k) => {
-                if (d.val.indexOf(search.value) === -1 && search.value.indexOf(d.val) === -1) return;
-                if (Array.isArray(this.COVER_STACK_HASH_DOM[stack]) && this.COVER_STACK_HASH_DOM[stack].indexOf(d.key) !== -1) return;
-                this.searchPushTag(stack,d,k);
-            });
+            this.searchPushTag(search, data, stack);
         });
     }
 
     searchCoverClick(stack, data, dom) {
         if (data.nodes !== null) {
             let nextStack = stack + 1;
-            if(Array.isArray(this.dimensional_data[nextStack])) {
-                this.SELECT_COVER_DOM.childNodes[nextStack].innerHTML = '';
-                this.dimensional_data[nextStack].forEach((d, k) => {
-                    if (data.nodes.includes(d.key)) this.searchPushTag(nextStack, d, k);
-                });
-            }
+            Array.isArray(this.dimensional_data[nextStack]) &&
+            this.searchPushTag(data.nodes, this.dimensional_data[nextStack], nextStack);
             return;
         }
         (dom instanceof HTMLElement) && dom.click();
     }
 
-    searchPushTag(stack,d,k) {
-        let div = document.createElement('div');
-        div.className = 'dlp dlp-text dlp-label';
-        div.insertAdjacentHTML('beforeend', `<i class="left"></i><span>${d.val}</span><i class="right"></i>`);
-        if (d.nodes !== null)div.querySelector('i.left').insertAdjacentHTML('afterbegin', _component.caret_right);
-        div.addEventListener('click', () => this.searchCoverClick(stack, d, this.STACKS[stack].childNodes[k]));
-        this.SELECT_COVER_DOM.childNodes[stack].prepend(div);
-        if (!Array.isArray(this.COVER_STACK_HASH_DOM[stack])) {
-            this.COVER_STACK_HASH_DOM[stack] = [d.key];
-            return;
-        }
-        this.COVER_STACK_HASH_DOM[stack].push(d.key);
+    searchPushTag(search, data, stack) {
+        data.forEach((d, k) => {
+            if (Array.isArray(search)) {
+                if (search.indexOf(d.key) === -1) return;
+            } else {
+                if (d.val.indexOf(search.value) === -1 && search.value.indexOf(d.val) === -1) return;
+            }
+            if (Array.isArray(this.COVER_STACK_HASH_DOM[stack]) && this.COVER_STACK_HASH_DOM[stack].indexOf(d.key) !== -1) return;
+            let div = document.createElement('div');
+            div.className = 'dlp dlp-text dlp-label';
+            div.insertAdjacentHTML('afterbegin', '<i class="left"></i>');
+            div.textContent = d.val;
+            div.insertAdjacentHTML('beforeend', '<i class="right"></i>');
+            if (d.nodes !== null) div.querySelector('i.left').insertAdjacentHTML('afterbegin', _component.caret_right);
+            div.addEventListener('click', () => this.searchCoverClick(stack, d, this.STACKS[stack].childNodes[k]));
+            this.SELECT_COVER_DOM.childNodes[stack].prepend(div);
+            if (!Array.isArray(this.COVER_STACK_HASH_DOM[stack])) {
+                this.COVER_STACK_HASH_DOM[stack] = [d.key];
+                return;
+            }
+            this.COVER_STACK_HASH_DOM[stack].push(d.key);
+        });
     }
 
     checkAll(stack, nodes, check) {
@@ -957,8 +1039,10 @@ window.ComponentLine = class {
             /*delay image loading*/
             if(val.type === 'image'){
                 setTimeout(()=>{
-                    let zoom = val.zoom === false ? false : true;
-                   _component.imgDelay(`${this.NAME}-${column}-img`,200,zoom);
+                    let zoom = val.zoom !== undefined ? val.zoom : true;
+                    let width = val.w !== undefined ? parseInt(val.w) : 300;
+                    let height = val.h !== undefined ? parseInt(val.h) : 0;
+                   _component.imgDelay(`${this.NAME}-${column}-img`,200,zoom,width,height);
                 });
             }
             if(val.type === 'datetime' || val.insert_type === 'datetime'){
@@ -1320,6 +1404,9 @@ window.ComponentLine = class {
 };
 
 window.ComponentPlane = class {
+    WIDTH;
+    HEIGHT;
+    FULLSCREEN;
     constructor(url, xhr = {}, options = {}) {
         if(document.querySelector('#dlp-plane') instanceof HTMLElement)return;
         this.URL = url;
@@ -1336,6 +1423,7 @@ window.ComponentPlane = class {
             top: '30px',
             left: 'auto'
         }, options);
+        this.FULLSCREEN = false;
         this.makeModal();
         this.makeContent();
     }
@@ -1353,13 +1441,40 @@ window.ComponentPlane = class {
             if(height>= (window.innerHeight - 25)) height = window.innerHeight - 25;
             height += 'px';
         }
+        this.WIDTH = width;
+        this.HEIGHT = height;
         let margin = this.OPTIONS.top + ' ' + this.OPTIONS.left;
         let html = `<div id="dlp-plane" class="dlp-plane-gauze"><div style="width: ${width};margin: ${margin}"><div class="dlp plane-header"></div><div class="plane-body dlp-scroll" style="height:${height};"></div></div></div>`;
         document.body.insertAdjacentHTML('beforeEnd', html);
         this.DOM = document.getElementById('dlp-plane');
+        /*F*/
+        let F = document.createElement('i');
+        F.style.marginRight = '10px';
+        F.insertAdjacentHTML('afterbegin', _component.aspect);
+        F.addEventListener('click', () => {
+            if (this.FULLSCREEN === false){
+                this.FULLSCREEN = true;
+                this.DOM.firstChild.style.width = '100%';
+                this.DOM.firstChild.style.margin = '0';
+                this.DOM.querySelector('.plane-body').style.height = (window.innerHeight - 25)+'px';
+            }else {
+                this.FULLSCREEN = false;
+                this.DOM.firstChild.style.width = this.WIDTH;
+                this.DOM.firstChild.style.marginTop = this.OPTIONS.top;
+                if(this.OPTIONS.left === 'auto'){
+                    this.DOM.firstChild.style.margin = `${this.OPTIONS.top} auto`;
+                }else {
+                    this.DOM.firstChild.style.marginTop = this.OPTIONS.top;
+                    this.DOM.firstChild.style.marginLeft = this.OPTIONS.left;
+                }
+                this.DOM.querySelector('.plane-body').style.height = this.HEIGHT;
+            }
+        }, false);
+        this.DOM.querySelector('.plane-header').append(F);
         /*X*/
         let X = document.createElement('i');
         X.insertAdjacentHTML('afterbegin', _component.close);
+        X.style.marginRight = '5px';
         X.addEventListener('click', () => {
             if (this.DOM instanceof HTMLElement) {
                 this.DOM.remove();
